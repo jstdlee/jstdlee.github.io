@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>jstdlee</title>
+  <style>
+    :root { --bg: #ffffff; --fg: #111111; --muted: #767676; --faint: #e5e5e5; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #0d0d0d; --fg: #e5e5e5; --muted: #888888; --faint: #262626; }
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", monospace;
+      background: var(--bg);
+      color: var(--fg);
+      margin: 0;
+      display: flex;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .gate {
+      width: 100%;
+      max-width: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .state {
+      font-size: 12px;
+      line-height: 1.7;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      border-left: 2px solid var(--faint);
+      padding-left: 10px;
+    }
+    .state div span {
+      color: var(--fg);
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    input {
+      width: 100%;
+      padding: 8px 10px;
+      font-size: 13px;
+      color: var(--fg);
+      background: transparent;
+      border: 1px solid var(--faint);
+      border-radius: 3px;
+      outline: none;
+      font-family: inherit;
+    }
+    input:focus { border-color: var(--muted); }
+    #err { font-size: 12px; color: #c0392b; min-height: 16px; display: none; }
+  </style>
+</head>
+<body>
+  <div class="gate">
+    <div class="state">
+      <div>state · <span>private archive</span></div>
+      <div>span  · <span>2009-01-01 → 2026-10-25 (18y)</span></div>
+      <div>notes · <span>134 records (115 std / 19 lock)</span></div>
+    </div>
+    <form id="unlock-form">
+      <input id="pwd" type="password" autocomplete="current-password" autofocus required placeholder="password…">
+      <div id="err">密码错误</div>
+    </form>
+  </div>
+  <script>
+    const SALT = "oshcyhh8lxAk+DyFA/EFrg==";
+    const IV = "wmCSL1DTSBDl/A7j";
+    const CIPHERTEXT = "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";
+    const STORAGE_KEY = "blog_tier1_pwd_v1";
+    const TTL_MS = 24 * 60 * 60 * 1000;
+
+    function b64ToBytes(b64) {
+      const bin = atob(b64);
+      const arr = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+      return arr;
+    }
+
+    function loadCachedPwd() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        const obj = JSON.parse(raw);
+        if (!obj || !obj.pwd || !obj.ts || (Date.now() - obj.ts > TTL_MS)) {
+          localStorage.removeItem(STORAGE_KEY);
+          return null;
+        }
+        return obj.pwd;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function saveCachedPwd(pwd) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ pwd, ts: Date.now() }));
+      } catch (_) {}
+    }
+
+    async function tryUnlock(pwd, fromCache) {
+      try {
+        const enc = new TextEncoder();
+        const keyMaterial = await crypto.subtle.importKey("raw", enc.encode(pwd), "PBKDF2", false, ["deriveKey"]);
+        const key = await crypto.subtle.deriveKey(
+          { name: "PBKDF2", salt: b64ToBytes(SALT), iterations: 100000, hash: "SHA-256" },
+          keyMaterial,
+          { name: "AES-GCM", length: 256 },
+          false,
+          ["decrypt"]
+        );
+        const decrypted = await crypto.subtle.decrypt(
+          { name: "AES-GCM", iv: b64ToBytes(IV) },
+          key,
+          b64ToBytes(CIPHERTEXT)
+        );
+        saveCachedPwd(pwd);
+        const html = new TextDecoder().decode(decrypted);
+        document.open();
+        document.write(html);
+        document.close();
+      } catch (e) {
+        if (fromCache) {
+          localStorage.removeItem(STORAGE_KEY);
+        } else {
+          const err = document.getElementById("err");
+          if (err) err.style.display = "block";
+        }
+      }
+    }
+
+    const cached = loadCachedPwd();
+    if (cached) tryUnlock(cached, true);
+
+    document.getElementById("unlock-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const val = document.getElementById("pwd").value;
+      if (val) tryUnlock(val, false);
+    });
+  </script>
+</body>
+</html>
